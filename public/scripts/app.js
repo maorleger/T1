@@ -47,10 +47,24 @@ var TrackerInput = React.createClass({
 });
 
 var TrackerOutput = React.createClass({
+  getInitialState: function() {
+    return {
+      json: {
+        raw_text: '' 
+      }
+    };
+  },
+  componentWillReceiveProps: function(nextProps) {
+    this.setState({
+      json: {
+        raw_text: nextProps.text
+      }
+    });
+  },
   render: function() {
     return (
       <div className="trackerOutput">
-        {this.props.text}
+        <pre>{JSON.stringify(this.state.json)}</pre>
       </div>
     )
   }
