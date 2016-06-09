@@ -34,36 +34,30 @@ var TrackerInput = React.createClass({
 });
 
 var TrackerOutput = React.createClass({
+  parseText: function(raw_text, regex) {
+    let retVal = '';
+    if (raw_text && raw_text.length > 0) {
+      let match = regex.exec(raw_text);
+      retVal = match && match.length > 0 ? match[1] : '';  
+    }
+    return retVal;
+  },
+  buildJson: function(raw_text = "") {
+    return {
+      raw_text: raw_text,
+      project_id: this.parseText(raw_text, /pid:(\d+)/g),
+      estimate: this.parseText(raw_text, /est:([0-3])/g)
+    };
+  },
   getInitialState: function() {
     return {
-      json: {
-        raw_text: '',
-        project_id: '',
-        estimate: ''
-      }
+      json: this.buildJson()
     };
   },
   componentWillReceiveProps: function(nextProps) {
-    let theMatchOrEmptyString = function(match) {
-      return match && match.length > 0 ? match[1] : '';
-    }
-    let parseProjectId = function(raw_text) {
-      const regex = /pid:(\d+)/g;
-      let match = regex.exec(raw_text);
-      return theMatchOrEmptyString(match);
-    }
-    let parseEstimate = function(raw_text) {
-      const regex = /est:(\d+)/g;
-      let match = regex.exec(raw_text);
-      return theMatchOrEmptyString(match);
-    }
+    
     this.setState({
-      json: 
-      {
-        raw_text: nextProps.text,
-        project_id: parseProjectId(nextProps.text),
-        estimate: parseEstimate(nextProps.text)
-      }
+      json: this.buildJson(nextProps.text)
     });
   },
   render: function() {
