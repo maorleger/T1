@@ -12,6 +12,10 @@ var Tracker = React.createClass({
   render: function() {
     return (
       <div className="tracker">
+        <TrackerProjectDropdown 
+          url="https://www.pivotaltracker.com/services/v5/projects" 
+          token="20965d3a9adc21d4a816fb9dbf822108"
+        />
         <TrackerInput updateText={this.handleTextChange} />
         <TrackerOutput text={this.state.text}/>
       </div>
@@ -55,7 +59,6 @@ var TrackerOutput = React.createClass({
     };
   },
   componentWillReceiveProps: function(nextProps) {
-    
     this.setState({
       json: this.buildJson(nextProps.text)
     });
@@ -65,9 +68,51 @@ var TrackerOutput = React.createClass({
       <div className="trackerOutput">
         <pre>{JSON.stringify(this.state.json)}</pre>
       </div>
-    )
+    );
   }
 });
+
+var TrackerProjectDropdown = React.createClass({
+  getInitialState: function() {
+    return {
+      projects: [
+        {id: 98, name: "Learn About the Force"},
+        {id: 99, name: "Death Star"}
+      ]
+    }
+  },
+  componentDidMount: function() {
+    var serverRequest = $.ajax(
+      this.props.url,
+      {
+        headers: {"X-TrackerToken": this.props.token}
+      }
+    )
+    .done(function(projects) {
+      this.setState({
+        projects: projects
+      })
+    }.bind(this));
+  },
+  componentWillUnmount: function() {
+    this.serverRequest.abort();
+  },
+  render: function() {
+    return (
+      <div className="TrackerProjectDropdown">
+        <select
+          className="form-control">
+          {this.state.projects.map(function(project) {
+            return <option key={project.id} value={project.id}>{project.name}</option>
+          })}
+        </select>
+          
+      </div>
+    );
+  }
+});
+
+var TrackerProjectSelectOptions = 
 
 ReactDOM.render(
   <Tracker />,
