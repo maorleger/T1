@@ -103,10 +103,7 @@ var TrackerOutput = React.createClass({
 var TrackerProjectDropdown = React.createClass({
   getInitialState: function() {
     return {
-      projects: [
-        {id: 98, name: "Learn About the Force"},
-        {id: 99, name: "Death Star"}
-      ]
+      projects: []
     }
   },
   componentDidMount: function() {
@@ -119,7 +116,7 @@ var TrackerProjectDropdown = React.createClass({
     .done(function(projects) {
       this.setState({
         projects: projects
-      })
+      });
     }.bind(this));
   },
   componentWillUnmount: function() {
@@ -130,6 +127,7 @@ var TrackerProjectDropdown = React.createClass({
       <div className="trackerProjectDropdown">
         <select onChange={this.props.onChange}
           className="form-control">
+          <option key="" value="">-- Please Select -- </option>
           {this.state.projects.map(function(project) {
             return <option key={project.id} value={project.id}>{project.name}</option>
           })}
