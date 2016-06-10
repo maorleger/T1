@@ -2,19 +2,30 @@
 // 1. initial value for project_id?
 // 2. remove the entire regex match from raw text for description
 var parseText = function(raw_text, regex) {
-  let retVal = '';
+  let retVal = {
+    full_match: '',
+    parsed_value: ''
+  };
   if (raw_text && raw_text.length > 0) {
     let match = regex.exec(raw_text);
-    retVal = match && match.length > 0 ? match[1] : '';  
+    if (match && match.length > 0) {
+      retVal.full_match = match[0];
+      retVal.parsed_value = match[1];
+    }
   }
   return retVal;
 }
 
+var buildDescription = function(raw_text, estimate_match) {
+  return raw_text.replace(estimate_match.full_match, '');
+}
+
 var buildJson = function(raw_text = "") {
-  let estimate = parseText(raw_text, /est:([0-3])/g);
+  let estimate = parseText(raw_text, /\best:([0-3])\b/g);
   return {
       raw_text: raw_text,
-      estimate: estimate
+      estimate: estimate.parsed_value,
+      description: buildDescription(raw_text, estimate)
   };
 }
 
