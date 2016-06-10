@@ -1,16 +1,42 @@
+// TODO:
+// 1. initial value for project_id?
+// 2. remove the entire regex match from raw text for description
+var parseText = function(raw_text, regex) {
+  let retVal = '';
+  if (raw_text && raw_text.length > 0) {
+    let match = regex.exec(raw_text);
+    retVal = match && match.length > 0 ? match[1] : '';  
+  }
+  return retVal;
+}
+
+var buildJson = function(raw_text = "") {
+  let estimate = parseText(raw_text, /est:([0-3])/g);
+  return {
+      raw_text: raw_text,
+      estimate: estimate
+  };
+}
+
 var Tracker = React.createClass({
   getInitialState: function() {
     return {
-      text: ''
+      json: buildJson(),
+      project_id: ''
     };
   },
   handleTextChange: function(textValue) {
     this.setState({
-      text: textValue
+      json: buildJson(textValue)
     });
   },
   handleOnClick: function(event) {
-    alert('clicked!');
+    console.log('clicked');
+  },
+  handleDropdownChange: function(event) {
+    this.setState({
+      project_id: event.target.value
+    })
   },
   render: function() {
     return (
@@ -18,9 +44,10 @@ var Tracker = React.createClass({
         <TrackerProjectDropdown 
           url="https://www.pivotaltracker.com/services/v5/projects" 
           token="20965d3a9adc21d4a816fb9dbf822108"
+          onChange={this.handleDropdownChange}
         />
         <TrackerInput updateText={this.handleTextChange} />
-        <TrackerOutput text={this.state.text}/>
+        <TrackerOutput json={this.state.json} project_id={this.state.project_id}/>
         <TrackerProjectSubmit OnClick={this.handleOnClick}  />
       </div>
     );
@@ -42,35 +69,21 @@ var TrackerInput = React.createClass({
 });
 
 var TrackerOutput = React.createClass({
-  parseText: function(raw_text, regex) {
-    let retVal = '';
-    if (raw_text && raw_text.length > 0) {
-      let match = regex.exec(raw_text);
-      retVal = match && match.length > 0 ? match[1] : '';  
-    }
-    return retVal;
-  },
-  buildJson: function(raw_text = "") {
-    return {
-      raw_text: raw_text,
-      project_id: this.parseText(raw_text, /pid:(\d+)/g),
-      estimate: this.parseText(raw_text, /est:([0-3])/g)
-    };
-  },
   getInitialState: function() {
     return {
-      json: this.buildJson()
+      json: this.props.json
     };
   },
   componentWillReceiveProps: function(nextProps) {
     this.setState({
-      json: this.buildJson(nextProps.text)
+      json: nextProps.json
     });
   },
   render: function() {
     return (
       <div className="trackerOutput">
-        <pre>{JSON.stringify(this.state.json)}</pre>
+        <pre>{JSON.stringify(this.props.json)}</pre>
+        <div>project_id:{this.props.project_id}</div>
       </div>
     );
   }
@@ -104,7 +117,7 @@ var TrackerProjectDropdown = React.createClass({
   render: function() {
     return (
       <div className="trackerProjectDropdown">
-        <select
+        <select onChange={this.props.onChange}
           className="form-control">
           {this.state.projects.map(function(project) {
             return <option key={project.id} value={project.id}>{project.name}</option>
