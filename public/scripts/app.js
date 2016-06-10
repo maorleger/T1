@@ -51,7 +51,6 @@ var Tracker = React.createClass({
       {
         headers: {"X-TrackerToken": this.state.token},
         data: {
-          name: "test",
           estimate: this.state.json.estimate,
           description: this.state.json.description,
           name: this.state.json.name
