@@ -9,6 +9,9 @@ var Tracker = React.createClass({
       text: textValue
     });
   },
+  handleOnClick: function(event) {
+    alert('clicked!');
+  },
   render: function() {
     return (
       <div className="tracker">
@@ -18,6 +21,7 @@ var Tracker = React.createClass({
         />
         <TrackerInput updateText={this.handleTextChange} />
         <TrackerOutput text={this.state.text}/>
+        <TrackerProjectSubmit OnClick={this.handleOnClick}  />
       </div>
     );
   }
@@ -99,7 +103,7 @@ var TrackerProjectDropdown = React.createClass({
   },
   render: function() {
     return (
-      <div className="TrackerProjectDropdown">
+      <div className="trackerProjectDropdown">
         <select
           className="form-control">
           {this.state.projects.map(function(project) {
@@ -107,6 +111,16 @@ var TrackerProjectDropdown = React.createClass({
           })}
         </select>
           
+      </div>
+    );
+  }
+});
+
+var TrackerProjectSubmit = React.createClass({
+  render: function() {
+    return (
+      <div className="trackerSubmit">
+        <input type="submit" onClick={this.props.OnClick} value="submit!" />
       </div>
     );
   }
