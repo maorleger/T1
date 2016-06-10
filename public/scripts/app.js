@@ -1,6 +1,3 @@
-// TODO:
-// 1. initial value for project_id?
-// 2. remove the entire regex match from raw text for description
 var parseText = function(raw_text, regex) {
   let retVal = {
     full_match: '',
@@ -16,16 +13,21 @@ var parseText = function(raw_text, regex) {
   return retVal;
 }
 
-var buildDescription = function(raw_text, estimate_match) {
-  return raw_text.replace(estimate_match.full_match, '');
+var buildDescription = function(raw_text, estimate_match, name_match) {
+  return raw_text.
+    replace(estimate_match.full_match, '').
+    replace(name_match.full_match, '').
+    replace(/\s+/g, ' ');;
 }
 
 var buildJson = function(raw_text = "") {
   let estimate = parseText(raw_text, /\best:([0-3])\b/g);
+  let name = parseText(raw_text, /\bnm:(.*)\\nm\b/g);
   return {
       raw_text: raw_text,
       estimate: estimate.parsed_value,
-      description: buildDescription(raw_text, estimate)
+      name: name.parsed_value,
+      description: buildDescription(raw_text, estimate, name)
   };
 }
 
@@ -33,7 +35,9 @@ var Tracker = React.createClass({
   getInitialState: function() {
     return {
       json: buildJson(),
-      project_id: ''
+      project_id: '',
+      token: "20965d3a9adc21d4a816fb9dbf822108",
+      baseTrackerUrl: "https://www.pivotaltracker.com/services/v5/projects/"
     };
   },
   handleTextChange: function(textValue) {
@@ -42,7 +46,24 @@ var Tracker = React.createClass({
     });
   },
   handleOnClick: function(event) {
-    console.log('clicked');
+    var serverRequest = $.ajax(
+      this.state.baseTrackerUrl + this.state.project_id + "/stories",
+      {
+        headers: {"X-TrackerToken": this.state.token},
+        data: {
+          name: "test",
+          estimate: this.state.json.estimate,
+          description: this.state.json.description,
+          name: this.state.json.name
+        },
+        dataType: "json",
+        type: "POST"
+      }
+    )
+    .done(function(projects) {
+      debugger;
+      });
+    
   },
   handleDropdownChange: function(event) {
     this.setState({
@@ -53,8 +74,8 @@ var Tracker = React.createClass({
     return (
       <div className="tracker">
         <TrackerProjectDropdown 
-          url="https://www.pivotaltracker.com/services/v5/projects" 
-          token="20965d3a9adc21d4a816fb9dbf822108"
+          url={this.state.baseTrackerUrl}
+          token={this.state.token}
           onChange={this.handleDropdownChange}
         />
         <TrackerInput updateText={this.handleTextChange} />
