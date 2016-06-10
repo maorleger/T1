@@ -61,6 +61,7 @@ var Tracker = React.createClass({
     )
     .done(function(projects) {
       debugger;
+      //TODO: add something here, maybe show a link to the tracker story?
       });
     
   },
@@ -93,7 +94,7 @@ var TrackerInput = React.createClass({
   render: function() {
     return (
       <div className="trackerInput">
-        <input type="text" name="text" ref="text" onChange={this.handleTextChange} placeholder="Let's Track!" />
+        <textarea type="text" className="form-control" name="text" ref="text" onChange={this.handleTextChange} placeholder="Let's Track!" />
       </div>
     );
   }
