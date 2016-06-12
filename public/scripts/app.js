@@ -60,10 +60,11 @@ var Tracker = React.createClass({
       }
     )
     .done(function(projects) {
-      debugger;
-      //TODO: add something here, maybe show a link to the tracker story?
+      this.setState({
+        json: projects
       });
-    
+      //TODO: add something here, maybe show a link to the tracker story?
+      }.bind(this));
   },
   handleDropdownChange: function(event) {
     this.setState({
@@ -114,7 +115,7 @@ var TrackerOutput = React.createClass({
   render: function() {
     return (
       <div className="trackerOutput">
-        <pre>{JSON.stringify(this.props.json)}</pre>
+        <pre>{JSON.stringify(this.props.json, null, 2)}</pre>
         <div>project_id:{this.props.project_id}</div>
       </div>
     );
