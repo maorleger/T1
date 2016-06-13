@@ -37,7 +37,8 @@ var Tracker = React.createClass({
       json: buildJson(),
       project_id: '',
       token: "20965d3a9adc21d4a816fb9dbf822108",
-      baseTrackerUrl: "https://www.pivotaltracker.com/services/v5/projects/"
+      baseTrackerUrl: "https://www.pivotaltracker.com/services/v5/projects/",
+      status: 'parser'
     };
   },
   handleTextChange: function(textValue) {
@@ -59,12 +60,19 @@ var Tracker = React.createClass({
         type: "POST"
       }
     )
-    .done(function(projects) {
+    .done(function(response) {
       this.setState({
-        json: projects
+        json: response,
+        status: 'success'
       });
       //TODO: add something here, maybe show a link to the tracker story?
-      }.bind(this));
+      }.bind(this))
+    .error(function(response) {
+      this.setState({
+        json: response,
+        status: 'error'
+      });
+    }.bind(this));
   },
   handleDropdownChange: function(event) {
     this.setState({
@@ -80,7 +88,7 @@ var Tracker = React.createClass({
           onChange={this.handleDropdownChange}
         />
         <TrackerInput updateText={this.handleTextChange} />
-        <TrackerOutput json={this.state.json} project_id={this.state.project_id}/>
+        <TrackerOutput json={this.state.json} project_id={this.state.project_id} status={this.state.status}/>
         <TrackerProjectSubmit OnClick={this.handleOnClick}  />
       </div>
     );
@@ -95,26 +103,24 @@ var TrackerInput = React.createClass({
   render: function() {
     return (
       <div className="trackerInput">
-        <textarea type="text" className="form-control" name="text" ref="text" onChange={this.handleTextChange} placeholder="Let's Track!" />
+        <fieldset class="form-group">
+          <label for="story-txt">Story data</label>
+          <textarea type="text" className="form-control" 
+                    name="text" ref="text" id="story-txt"
+                    onChange={this.handleTextChange} 
+                    placeholder="Let's Track!" />
+        </fieldset>
       </div>
     );
   }
 });
 
 var TrackerOutput = React.createClass({
-  getInitialState: function() {
-    return {
-      json: this.props.json
-    };
-  },
-  componentWillReceiveProps: function(nextProps) {
-    this.setState({
-      json: nextProps.json
-    });
-  },
   render: function() {
     return (
       <div className="trackerOutput">
+        <hr />
+        <p><strong>{this.props.status} output:</strong></p>
         <pre>{JSON.stringify(this.props.json, null, 2)}</pre>
         <div>project_id:{this.props.project_id}</div>
       </div>
@@ -147,14 +153,16 @@ var TrackerProjectDropdown = React.createClass({
   render: function() {
     return (
       <div className="trackerProjectDropdown">
-        <select onChange={this.props.onChange}
-          className="form-control">
-          <option key="" value="">-- Please Select -- </option>
-          {this.state.projects.map(function(project) {
-            return <option key={project.id} value={project.id}>{project.name}</option>
-          })}
-        </select>
-          
+        <fieldset class="form-group">
+          <label for="project-ddl">Project</label>
+          <select onChange={this.props.onChange}
+            className="form-control" id="project-ddl">
+            <option key="" value="">-- Please Select -- </option>
+            {this.state.projects.map(function(project) {
+              return <option key={project.id} value={project.id}>{project.name}</option>
+            })}
+          </select>
+        </fieldset>
       </div>
     );
   }

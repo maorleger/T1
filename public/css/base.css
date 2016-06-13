@@ -54,3 +54,7 @@ p, ul {
 ul {
   padding-left: 30px;
 }
+
+fieldset {
+  padding-top: 1em;
+}
