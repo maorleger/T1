@@ -13,22 +13,34 @@ var parseText = function(raw_text, regex) {
   return retVal;
 }
 
-var buildDescription = function(raw_text, estimate_match, name_match) {
-  return raw_text.
-    replace(estimate_match.full_match, '').
-    replace(name_match.full_match, '').
-    replace(/\s+/g, ' ');;
+var buildDescription = function(raw_text) {
+  for (var i = 1; i < arguments.length; i++) {
+    raw_text = raw_text.replace(arguments[i].full_match, '');
+  }
+  return raw_text.replace(/\s+/g, ' ');
 }
 
 var buildJson = function(raw_text = "") {
   let estimate = parseText(raw_text, /\best:([0-3])\b/g);
   let name = parseText(raw_text, /\bnm:(.*)\\nm\b/g);
-  return {
-      raw_text: raw_text,
-      estimate: estimate.parsed_value,
-      name: name.parsed_value,
-      description: buildDescription(raw_text, estimate, name)
+  let story_type = parseText(raw_text, /\btype:(feature|bug|chore|release)\b/g);
+  let integration_id = parseText(raw_text, /\bintid:(\d+)\b/g);
+  let json = {
+    description: buildDescription(raw_text, estimate, name, story_type, integration_id)
   };
+  if (estimate.parsed_value) {
+    json['estimate'] = estimate.parsed_value;
+  }
+  if (name.parsed_value) {
+    json['name'] = name.parsed_value;
+  }
+  if (story_type.parsed_value) {
+    json['story_type'] = story_type.parsed_value;
+  }
+  if (integration_id.parsed_value) {
+    json['integration_id'] = integration_id.parsed_value;
+  }
+  return json;
 }
 
 var Tracker = React.createClass({
@@ -36,9 +48,8 @@ var Tracker = React.createClass({
     return {
       json: buildJson(),
       project_id: '',
-      token: "20965d3a9adc21d4a816fb9dbf822108",
-      baseTrackerUrl: "https://www.pivotaltracker.com/services/v5/projects/",
-      status: 'parser'
+      status: 'parser',
+      story_url: ''
     };
   },
   handleTextChange: function(textValue) {
@@ -48,14 +59,10 @@ var Tracker = React.createClass({
   },
   handleOnClick: function(event) {
     var serverRequest = $.ajax(
-      this.state.baseTrackerUrl + this.state.project_id + "/stories",
+      this.props.baseTrackerUrl + this.state.project_id + "/stories",
       {
-        headers: {"X-TrackerToken": this.state.token},
-        data: {
-          estimate: this.state.json.estimate,
-          description: this.state.json.description,
-          name: this.state.json.name
-        },
+        headers: {"X-TrackerToken": this.props.token},
+        data: this.state.json,
         dataType: "json",
         type: "POST"
       }
@@ -63,9 +70,9 @@ var Tracker = React.createClass({
     .done(function(response) {
       this.setState({
         json: response,
-        status: 'success'
+        status: 'success',
+        story_url: response['url']
       });
-      //TODO: add something here, maybe show a link to the tracker story?
       }.bind(this))
     .error(function(response) {
       this.setState({
@@ -83,12 +90,12 @@ var Tracker = React.createClass({
     return (
       <div className="tracker">
         <TrackerProjectDropdown 
-          url={this.state.baseTrackerUrl}
-          token={this.state.token}
+          url={this.props.baseTrackerUrl}
+          token={this.props.token}
           onChange={this.handleDropdownChange}
         />
         <TrackerInput updateText={this.handleTextChange} />
-        <TrackerOutput json={this.state.json} project_id={this.state.project_id} status={this.state.status}/>
+        <TrackerOutput json={this.state.json} project_id={this.state.project_id} status={this.state.status} story_url={this.state.story_url}/>
         <TrackerProjectSubmit OnClick={this.handleOnClick}  />
       </div>
     );
@@ -120,6 +127,7 @@ var TrackerOutput = React.createClass({
     return (
       <div className="trackerOutput">
         <hr />
+        <div><a href={this.props.story_url} target="_blank">{this.props.story_url}</a></div>
         <p><strong>{this.props.status} output:</strong></p>
         <pre>{JSON.stringify(this.props.json, null, 2)}</pre>
         <div>project_id:{this.props.project_id}</div>
@@ -178,9 +186,7 @@ var TrackerProjectSubmit = React.createClass({
   }
 });
 
-var TrackerProjectSelectOptions = 
-
 ReactDOM.render(
-  <Tracker />,
+  <Tracker token="" baseTrackerUrl="https://www.pivotaltracker.com/services/v5/projects/"/>,
   document.getElementById('content')
 );
