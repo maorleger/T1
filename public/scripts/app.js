@@ -130,7 +130,7 @@ var TrackerOutput = React.createClass({
         <div><a href={this.props.story_url} target="_blank">{this.props.story_url}</a></div>
         <p><strong>{this.props.status} output:</strong></p>
         <pre>{JSON.stringify(this.props.json, null, 2)}</pre>
-        <div>project_id:{this.props.project_id}</div>
+        <pre>project_id:{this.props.project_id}</pre>
       </div>
     );
   }
@@ -180,7 +180,7 @@ var TrackerProjectSubmit = React.createClass({
   render: function() {
     return (
       <div className="trackerSubmit">
-        <input type="submit" onClick={this.props.OnClick} value="submit!" />
+        <input type="submit" className="btn btn-primary" onClick={this.props.OnClick} value="submit!" />
       </div>
     );
   }
